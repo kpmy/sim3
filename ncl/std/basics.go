@@ -46,7 +46,7 @@ func NewNot() ncl.Element {
 		ncl.Step(n, func() {
 			ok, val := n.I.Select()
 			if ok {
-				n.O.Validate(true, notMap[val])
+				n.O.Validate(true, tri.Not(val))
 			} else {
 				n.O.Validate(false)
 			}
@@ -64,14 +64,4 @@ func NewBuffer() ncl.Element {
 		})
 	}(b)
 	return b
-}
-
-var notMap map[tri.Trit]tri.Trit
-
-func init() {
-	// таблицы истинности
-	notMap = make(map[tri.Trit]tri.Trit)
-	notMap[tri.TRUE] = tri.FALSE
-	notMap[tri.FALSE] = tri.TRUE
-	notMap[tri.NIL] = tri.NIL
 }

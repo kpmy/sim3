@@ -59,20 +59,21 @@ func (p *point) Solder(pins ...ncl.Pin) {
 }
 
 func (p *point) sel() (meta tri.Trit, signal tri.Trit) {
+	meta, signal = tri.FALSE, tri.NIL
 	for _, _x := range p.pins {
 		switch x := _x.(type) {
 		case *out:
+			assert.For(meta == tri.FALSE, 100)
 			meta := <-x.meta
 			if meta == tri.TRUE {
-				data := <-x.signal
-				return meta, data
+				signal = <-x.signal
 			}
 		case *in:
 		default:
 			halt.As(100)
 		}
 	}
-	return tri.FALSE, tri.NIL
+	return
 }
 
 func (p *point) set(meta tri.Trit, signal tri.Trit) {
