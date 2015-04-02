@@ -2,24 +2,29 @@ package main
 
 import (
 	"github.com/ivpusic/neo"
+	"github.com/ivpusic/neo-cors"
 	"runtime"
 	"sim3/ncl"
 	"sim3/ncl/std"
-	"time"
+	"sync"
 )
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU() * 4)
+
 	nw := func() {
 		app := neo.App()
-
-		app.Get("/", func(ctx *neo.Ctx) {
-			ctx.Res.Text("I am Neo Programmer", 200)
+		app.Use(cors.Init())
+		app.Get("/tri.json", func(ctx *neo.Ctx) {
+			ctx.Res.Text("[]", 200)
 		})
-
 		app.Start()
 	}
 	go nw()
-	runtime.GOMAXPROCS(runtime.NumCPU() * 4)
+
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+
 	board := std.Board()
 	not := std.NewNot()
 	board.Point("+").Solder(std.NewProbe("+").Pin(ncl.I))
@@ -28,5 +33,5 @@ func main() {
 	buf := std.NewBuffer()
 	board.Point("not+").Solder(buf.Pin(ncl.I))
 	board.Point("not+buf").Solder(buf.Pin(ncl.O), std.NewProbe("not+buf").Pin(ncl.I))
-	time.Sleep(time.Duration(time.Second * 2))
+	wg.Wait()
 }
