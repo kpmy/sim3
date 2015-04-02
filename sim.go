@@ -9,8 +9,13 @@ import (
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU() * 4)
-	probe := std.NewProbe()
 	board := std.Board()
-	board.Point("+").Solder(probe.Pin(ncl.I))
-	time.Sleep(time.Second)
+	not := std.NewNot()
+	board.Point("+").Solder(std.NewProbe("+").Pin(ncl.I))
+	board.Point("+").Solder(not.Pin(ncl.I))
+	board.Point("not+").Solder(not.Pin(ncl.O))
+	buf := std.NewBuffer()
+	board.Point("not+").Solder(buf.Pin(ncl.I))
+	board.Point("not+buf").Solder(buf.Pin(ncl.O), std.NewProbe("not+buf").Pin(ncl.I))
+	time.Sleep(time.Duration(time.Second * 2))
 }

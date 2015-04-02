@@ -19,7 +19,8 @@ func (t *plus) Pin(c ncl.PinCode) ncl.Pin {
 
 type probe struct {
 	ncl.Element
-	I ncl.In
+	I    ncl.In
+	name string
 }
 
 func (p *probe) Pin(c ncl.PinCode) ncl.Pin {
@@ -31,14 +32,13 @@ var Static struct {
 	Pos ncl.Element
 }
 
-func NewProbe() (ret ncl.Element) {
-	ret = &probe{I: newIn()}
+func NewProbe(n string) (ret ncl.Element) {
+	ret = &probe{I: newIn(), name: n}
 	go func(p *probe) {
-		fmt.Println("probe")
-		for {
+		ncl.Step(p, func() {
 			meta, signal := p.I.Select()
-			fmt.Println("probe", meta, signal)
-		}
+			fmt.Println("probe", p.name, meta, signal)
+		})
 	}(ret.(*probe))
 	return
 }
@@ -46,11 +46,9 @@ func NewProbe() (ret ncl.Element) {
 func newPlus() (ret *plus) {
 	ret = &plus{O: newOut()}
 	go func(p *plus) {
-		fmt.Println("plus")
-		for {
+		ncl.Step(p, func() {
 			p.O.Validate(true, tri.TRUE)
-			fmt.Print("+")
-		}
+		})
 	}(ret)
 	return
 }

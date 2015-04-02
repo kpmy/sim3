@@ -1,7 +1,6 @@
 package std
 
 import (
-	"fmt"
 	"sim3/ncl"
 	"sim3/tri"
 	"ypk/assert"
@@ -43,8 +42,8 @@ type point struct {
 	pins []ncl.Pin
 }
 
-func (p *point) Solder(pin ncl.Pin) {
-	exists := func() bool {
+func (p *point) Solder(pins ...ncl.Pin) {
+	exists := func(pin ncl.Pin) bool {
 		for _, x := range p.pins {
 			if x == pin {
 				return true
@@ -52,8 +51,10 @@ func (p *point) Solder(pin ncl.Pin) {
 		}
 		return false
 	}
-	if !exists() {
-		p.pins = append(p.pins, pin)
+	for _, pin := range pins {
+		if !exists(pin) {
+			p.pins = append(p.pins, pin)
+		}
 	}
 }
 
@@ -92,10 +93,9 @@ func (p *point) set(meta tri.Trit, signal tri.Trit) {
 func pt() (ret *point) {
 	ret = &point{pins: make([]ncl.Pin, 0)}
 	go func(p *point) {
-		fmt.Println("point")
-		for {
+		ncl.Step(p, func() {
 			p.set(p.sel())
-		}
+		})
 	}(ret)
 	return ret
 }

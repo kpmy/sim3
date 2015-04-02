@@ -25,7 +25,7 @@ type Out interface {
 }
 
 type Point interface {
-	Solder(Pin)
+	Solder(...Pin)
 }
 
 type Element interface {
