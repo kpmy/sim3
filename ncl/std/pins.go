@@ -64,7 +64,7 @@ func (p *point) sel() (meta tri.Trit, signal tri.Trit) {
 		switch x := _x.(type) {
 		case *out:
 			assert.For(meta == tri.FALSE, 100)
-			meta := <-x.meta
+			meta = <-x.meta
 			if meta == tri.TRUE {
 				signal = <-x.signal
 			}

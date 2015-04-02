@@ -2,6 +2,7 @@ package std
 
 import (
 	"fmt"
+	"sim3/api"
 	"sim3/ncl"
 	"sim3/tri"
 	"ypk/assert"
@@ -37,7 +38,8 @@ func NewProbe(n string) (ret ncl.Element) {
 	go func(p *probe) {
 		ncl.Step(p, func() {
 			meta, signal := p.I.Select()
-			fmt.Println("probe", p.name, meta, signal)
+			api.Log(&api.Item{Name: p.name, Type: "probe", Meta: meta, Signal: signal})
+			fmt.Println(p.name, meta, signal)
 		})
 	}(ret.(*probe))
 	return

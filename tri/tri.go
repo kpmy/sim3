@@ -1,19 +1,19 @@
 package tri
 
 /* троичная логика */
-var TRUE Trit = Trit{n: false, t: true}
-var FALSE Trit = Trit{n: false, t: false}
-var NIL Trit = Trit{n: true, t: false}
+var TRUE Trit = Trit{N: false, T: true}
+var FALSE Trit = Trit{N: false, T: false}
+var NIL Trit = Trit{N: true, T: false}
 
 type Trit struct {
-	n bool
-	t bool
+	N bool
+	T bool
 }
 
 func (t Trit) String() string {
-	if t.n {
+	if t.N {
 		return "%nil"
-	} else if t.t {
+	} else if t.T {
 		return "%true"
 	} else {
 		return "%false"

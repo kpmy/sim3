@@ -4,6 +4,7 @@ import (
 	"github.com/ivpusic/neo"
 	"github.com/ivpusic/neo-cors"
 	"runtime"
+	"sim3/api"
 	"sim3/ncl"
 	"sim3/ncl/std"
 	"sync"
@@ -15,9 +16,7 @@ func main() {
 	nw := func() {
 		app := neo.App()
 		app.Use(cors.Init())
-		app.Get("/tri.json", func(ctx *neo.Ctx) {
-			ctx.Res.Text("[]", 200)
-		})
+		app.Get("/tri.json", api.Tri)
 		app.Start()
 	}
 	go nw()
