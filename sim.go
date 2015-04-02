@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/ivpusic/neo"
 	"runtime"
 	"sim3/ncl"
 	"sim3/ncl/std"
@@ -8,6 +9,16 @@ import (
 )
 
 func main() {
+	nw := func() {
+		app := neo.App()
+
+		app.Get("/", func(ctx *neo.Ctx) {
+			ctx.Res.Text("I am Neo Programmer", 200)
+		})
+
+		app.Start()
+	}
+	go nw()
 	runtime.GOMAXPROCS(runtime.NumCPU() * 4)
 	board := std.Board()
 	not := std.NewNot()
