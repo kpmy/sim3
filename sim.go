@@ -1,21 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"runtime"
-	"sync"
+	"sim3/ncl"
+	"sim3/ncl/std"
+	"time"
 )
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU() * 4)
-	routine := func(x int, g *sync.WaitGroup) {
-		fmt.Println(x)
-		g.Done()
-	}
-	wg := new(sync.WaitGroup)
-	for i := 0; i < 150000; i++ {
-		wg.Add(1)
-		go routine(i, wg)
-	}
-	wg.Wait()
+	probe := std.NewProbe()
+	board := std.Board()
+	board.Point("+").Solder(probe.Pin(ncl.I))
+	time.Sleep(time.Second)
 }
