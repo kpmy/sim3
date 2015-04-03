@@ -39,9 +39,11 @@ update() async{
     }
     map[i.name].add(i);
   });
-  map.keys.forEach((s){
+  var keys = map.keys.toList();
+  keys.sort();
+  keys.forEach((s){
     var id = "p"+s.hashCode.toString();
-    (Q("#data") as DivElement).appendHtml("<div id='p$id' style='white-space: nowrap;'>$s: </div>");
+    (Q("#data") as DivElement).appendHtml("<div>$s:</div><div id='p$id' style='white-space: nowrap;'></div>");
     String dump = "";
     map[s].forEach((i){
       var sig = i.signal == null ? "0" : i.signal ? "+" : "-";

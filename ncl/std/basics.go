@@ -6,17 +6,17 @@ import (
 	"ypk/halt"
 )
 
-type Not struct {
+type not struct {
 	I ncl.In
 	O ncl.Out
 }
 
-type Buffer struct {
+type buffer struct {
 	I ncl.In
 	O ncl.Out
 }
 
-func (n *Not) Pin(c ncl.PinCode) ncl.Pin {
+func (n *not) Pin(c ncl.PinCode) ncl.Pin {
 	switch c {
 	case ncl.I:
 		return n.I
@@ -28,7 +28,7 @@ func (n *Not) Pin(c ncl.PinCode) ncl.Pin {
 	panic(0)
 }
 
-func (b *Buffer) Pin(c ncl.PinCode) ncl.Pin {
+func (b *buffer) Pin(c ncl.PinCode) ncl.Pin {
 	switch c {
 	case ncl.I:
 		return b.I
@@ -40,9 +40,9 @@ func (b *Buffer) Pin(c ncl.PinCode) ncl.Pin {
 	panic(0)
 }
 
-func NewNot() ncl.Element {
-	n := &Not{I: newIn(), O: newOut()}
-	go func(n *Not) {
+func Not() ncl.Element {
+	n := &not{I: newIn(), O: newOut()}
+	go func(n *not) {
 		ncl.Step(n, func() {
 			ok, val := n.I.Select()
 			if ok {
@@ -55,9 +55,9 @@ func NewNot() ncl.Element {
 	return n
 }
 
-func NewBuffer() ncl.Element {
-	b := &Buffer{I: newIn(), O: newOut()}
-	go func(b *Buffer) {
+func Buffer() ncl.Element {
+	b := &buffer{I: newIn(), O: newOut()}
+	go func(b *buffer) {
 		ncl.Step(b, func() {
 			ok, val := b.I.Select()
 			b.O.Validate(ok, val)

@@ -1,19 +1,19 @@
 package std
 
 import (
-	"fmt"
 	"sim3/api"
 	"sim3/ncl"
 	"sim3/tri"
 	"ypk/assert"
 )
 
-type plus struct {
+type power struct {
 	ncl.Element
-	O ncl.Out
+	O     ncl.Out
+	value tri.Trit
 }
 
-func (t *plus) Pin(c ncl.PinCode) ncl.Pin {
+func (t *power) Pin(c ncl.PinCode) ncl.Pin {
 	assert.For(c == ncl.O, 20)
 	return t.O
 }
@@ -28,35 +28,67 @@ func (p *probe) Pin(c ncl.PinCode) ncl.Pin {
 	assert.For(c == ncl.I, 20)
 	return p.I
 }
-
-var Static struct {
-	Pos ncl.Element
-}
-
-func NewProbe(n string) (ret ncl.Element) {
+func Probe(n string) (ret ncl.Element) {
 	ret = &probe{I: newIn(), name: n}
 	go func(p *probe) {
 		ncl.Step(p, func() {
 			meta, signal := p.I.Select()
 			api.Log(&api.Item{Name: p.name, Type: "probe", Meta: meta, Signal: signal})
-			fmt.Println(p.name, meta, signal)
+			//fmt.Println(p.name, meta, signal)
 		})
 	}(ret.(*probe))
 	return
 }
 
-func newPlus() (ret *plus) {
-	ret = &plus{O: newOut()}
-	go func(p *plus) {
+func Source(trit tri.Trit) (ret *power) {
+	ret = &power{O: newOut(), value: trit}
+	go func(p *power) {
 		ncl.Step(p, func() {
-			p.O.Validate(true, tri.TRUE)
+			p.O.Validate(true, p.value)
 		})
 	}(ret)
 	return
 }
 
+type gen struct {
+	O   ncl.Out
+	seq []tri.Trit
+}
+
+func (g *gen) Pin(c ncl.PinCode) ncl.Pin {
+	assert.For(c == ncl.O, 20)
+	return g.O
+}
+
+func Generator(s ...tri.Trit) (ret ncl.Element) {
+	assert.For(len(s) > 0, 20)
+	ret = &gen{O: newOut(), seq: s}
+	go func(g *gen) {
+		i := 0
+		valid := true
+		ncl.Step(g, func() {
+			g.O.Validate(valid, g.seq[i])
+			valid = !valid
+			i++
+			if i == len(g.seq) {
+				i = 0
+			}
+		})
+
+	}(ret.(*gen))
+	return
+}
+
+var Static struct {
+	Pos    ncl.Element
+	Neg    ncl.Element
+	Ground ncl.Element
+}
+
 func init() {
-	Static.Pos = newPlus()
+	Static.Pos = Source(tri.TRUE)
+	Static.Neg = Source(tri.FALSE)
+	Static.Ground = Source(tri.NIL)
 }
 
 type board struct {
@@ -77,5 +109,7 @@ func Board() ncl.Compound {
 	ret := &board{}
 	ret.points = make(map[string]ncl.Point)
 	ret.Point("+").Solder(Static.Pos.Pin(ncl.O))
+	ret.Point("-").Solder(Static.Neg.Pin(ncl.O))
+	ret.Point("0").Solder(Static.Ground.Pin(ncl.O))
 	return ret
 }
