@@ -48,9 +48,9 @@ update() async{
     map[s].forEach((i){
       var sig = i.signal == null ? "0" : i.signal ? "+" : "-";
       if(i.meta)
-        dump = "$sig $dump";
+        dump = "$sig$dump";
       else
-        dump = "_  $dump";
+        dump = "_$dump";
     });
     (Q("#p$id") as DivElement).appendHtml(dump);
   });

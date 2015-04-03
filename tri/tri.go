@@ -37,9 +37,10 @@ func Not(t Trit) Trit {
 		return FALSE
 	} else if t == FALSE {
 		return TRUE
-	} else {
+	} else if t == NIL {
 		return NIL
 	}
+	panic(0)
 }
 
 func Impl(p, q Trit) Trit {

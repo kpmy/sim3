@@ -68,13 +68,14 @@ func Generator(s ...tri.Trit) (ret ncl.Element) {
 		valid := true
 		ncl.Step(g, func() {
 			g.O.Validate(valid, g.seq[i])
+			if valid {
+				i++
+			}
 			valid = !valid
-			i++
 			if i == len(g.seq) {
 				i = 0
 			}
 		})
-
 	}(ret.(*gen))
 	return
 }
@@ -99,7 +100,7 @@ type board struct {
 func (b *board) Point(x string, p ...ncl.Point) (ret ncl.Point) {
 	ret = b.points[x]
 	if ret == nil {
-		ret = pt()
+		ret = pt(x)
 		b.points[x] = ret
 	}
 	return

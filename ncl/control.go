@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-var slow time.Duration = time.Duration(time.Millisecond * 100)
+var slow time.Duration = time.Duration(time.Millisecond * 500)
 
 func Step(obj interface{}, step func()) {
 	do := func() {

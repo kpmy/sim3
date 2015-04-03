@@ -18,9 +18,12 @@ func init() {
 	wg.Add(1)
 }
 
-func loader() {
+func load() {
 	board := std.Board()
-	board.Point("~").Solder(std.Probe("~").Pin(ncl.I), std.Generator(tri.TRUE, tri.NIL, tri.FALSE, tri.NIL).Pin(ncl.O))
+	probe := std.Probe("NOT(~)")
+	not := std.Not()
+	board.Point("~").Solder(std.Probe("~").Pin(ncl.I), std.Generator(tri.TRUE, tri.NIL, tri.FALSE, tri.NIL).Pin(ncl.O), not.Pin(ncl.I))
+	board.Point("!~").Solder(not.Pin(ncl.O), probe.Pin(ncl.I))
 }
 
 func main() {
@@ -31,6 +34,6 @@ func main() {
 		app.Start()
 	}
 	go nw()
-	go loader()
+	load()
 	wg.Wait()
 }
