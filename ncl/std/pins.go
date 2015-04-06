@@ -102,13 +102,13 @@ func pt(n string) (ret *point) {
 	return ret
 }
 
-func newOut() (ret *out) {
+func NewOut() (ret *out) {
 	ret = &out{}
 	ret.meta = make(chan *tri.Trit)
 	return
 }
 
-func newIn() (ret *in) {
+func NewIn() (ret *in) {
 	ret = &in{}
 	ret.meta = make(chan *tri.Trit)
 	return

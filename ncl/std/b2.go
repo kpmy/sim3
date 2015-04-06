@@ -41,7 +41,7 @@ func Not() ncl.Element {
 		q = tri.Not(p)
 		return
 	}
-	e := &any2{typ: "¬", I: newIn(), O: newOut(), fn: f}
+	e := &any2{typ: "¬", I: NewIn(), O: NewOut(), fn: f}
 	go doAny2(e)
 	return e
 }
@@ -51,7 +51,7 @@ func Buffer() ncl.Element {
 		q = p
 		return
 	}
-	e := &any2{typ: "BUF", I: newIn(), O: newOut(), fn: f}
+	e := &any2{typ: "BUF", I: NewIn(), O: NewOut(), fn: f}
 	go doAny2(e)
 	return e
 }
@@ -61,7 +61,7 @@ func CycleRight() ncl.Element {
 		q = tri.CNot(p)
 		return
 	}
-	e := &any2{typ: "→", I: newIn(), O: newOut(), fn: f}
+	e := &any2{typ: "→", I: NewIn(), O: NewOut(), fn: f}
 	go doAny2(e)
 	return e
 }
@@ -71,7 +71,7 @@ func CycleLeft() ncl.Element {
 		q = tri.CNot(tri.CNot(p))
 		return
 	}
-	e := &any2{typ: "←", I: newIn(), O: newOut(), fn: f}
+	e := &any2{typ: "←", I: NewIn(), O: NewOut(), fn: f}
 	go doAny2(e)
 	return e
 }

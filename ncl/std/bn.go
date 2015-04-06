@@ -100,13 +100,13 @@ func doDemux(e *demux) {
 }
 
 func Mux() ncl.Element {
-	e := &mux{A: newIn(), B: newOut(), T: newIn(), N: newIn(), F: newIn()}
+	e := &mux{A: NewIn(), B: NewOut(), T: NewIn(), N: NewIn(), F: NewIn()}
 	go doMux(e)
 	return e
 }
 
 func Demux() ncl.Element {
-	e := &demux{A: newIn(), B: newIn(), T: newOut(), N: newOut(), F: newOut()}
+	e := &demux{A: NewIn(), B: NewIn(), T: NewOut(), N: NewOut(), F: NewOut()}
 	go doDemux(e)
 	return e
 }

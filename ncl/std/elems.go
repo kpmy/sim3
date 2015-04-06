@@ -1,10 +1,12 @@
 package std
 
 import (
+	"reflect"
 	"sim3/api"
 	"sim3/ncl"
 	"sim3/tri"
 	"ypk/assert"
+	"ypk/halt"
 )
 
 type power struct {
@@ -29,7 +31,7 @@ func (p *probe) Pin(c ncl.PinCode) ncl.Pin {
 	return p.I
 }
 func Probe(n string) (ret ncl.Element) {
-	ret = &probe{I: newIn(), name: n}
+	ret = &probe{I: NewIn(), name: n}
 	go func(p *probe) {
 		ncl.Step(p, func() {
 			meta, signal := p.I.Select()
@@ -41,7 +43,7 @@ func Probe(n string) (ret ncl.Element) {
 }
 
 func Source(trit tri.Trit) (ret *power) {
-	ret = &power{O: newOut(), value: trit}
+	ret = &power{O: NewOut(), value: trit}
 	go func(p *power) {
 		ncl.Step(p, func() {
 			p.O.Validate(true, p.value)
@@ -62,7 +64,7 @@ func (g *gen) Pin(c ncl.PinCode) ncl.Pin {
 
 func Generator(s ...tri.Trit) (ret ncl.Element) {
 	assert.For(len(s) > 0, 20)
-	ret = &gen{O: newOut(), seq: s}
+	ret = &gen{O: NewOut(), seq: s}
 	go func(g *gen) {
 		i := 0
 		valid := true
@@ -95,9 +97,23 @@ func init() {
 type board struct {
 	ncl.Compound
 	points map[string]ncl.Point
+	pins   map[ncl.PinCode]ncl.Pin
+	_pins  map[ncl.PinCode]ncl.Pin
 }
 
-func (b *board) Point(x string, p ...ncl.Point) (ret ncl.Point) {
+func (b *board) Pin(c ncl.PinCode) (ret ncl.Pin) {
+	ret = b.pins[c]
+	assert.For(ret != nil, 20)
+	return
+}
+
+func (b *board) InnerPin(c ncl.PinCode) (ret ncl.Pin) {
+	ret = b._pins[c]
+	assert.For(ret != nil, 20)
+	return
+}
+
+func (b *board) Point(x string) (ret ncl.Point) {
 	ret = b.points[x]
 	if ret == nil {
 		ret = pt(x)
@@ -106,12 +122,31 @@ func (b *board) Point(x string, p ...ncl.Point) (ret ncl.Point) {
 	return
 }
 
-func Board() ncl.Compound {
+func Board(pins map[ncl.PinCode]ncl.Pin) ncl.Compound {
 	ret := &board{}
 	ret.points = make(map[string]ncl.Point)
-	ret.Point("+").Solder(Static.Pos.Pin(ncl.O))
-	ret.Point("-").Solder(Static.Neg.Pin(ncl.O))
-	ret.Point("0").Solder(Static.Ground.Pin(ncl.O))
+	ret.Point("T").Solder(Static.Pos.Pin(ncl.O))
+	ret.Point("F").Solder(Static.Neg.Pin(ncl.O))
+	ret.Point("N").Solder(Static.Ground.Pin(ncl.O))
+	ret.pins = make(map[ncl.PinCode]ncl.Pin)
+	ret._pins = make(map[ncl.PinCode]ncl.Pin)
+	if pins != nil {
+		for k, _p := range pins {
+			b := Buffer().(*any2)
+			switch p := _p.(type) {
+			case ncl.In:
+				b.I = p
+				ret.pins[k] = p
+				ret._pins[k] = b.O
+			case ncl.Out:
+				b.O = p
+				ret.pins[k] = p
+				ret._pins[k] = b.I
+			default:
+				halt.As(100, reflect.TypeOf(p))
+			}
+		}
+	}
 	return ret
 }
 
@@ -132,7 +167,7 @@ func (t *trig) Pin(c ncl.PinCode) ncl.Pin {
 }
 
 func Trigger() ncl.Element {
-	t := &trig{D: newOut(), S: newIn(), data: tri.NIL}
+	t := &trig{D: NewOut(), S: NewIn(), data: tri.NIL}
 	go func(t *trig) {
 		ncl.Step(t, func() {
 			ok, val := t.S.Select()

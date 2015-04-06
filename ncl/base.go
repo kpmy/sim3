@@ -25,6 +25,7 @@ const (
 	T
 	N
 	F
+	C
 )
 
 type Pin interface {
@@ -50,5 +51,6 @@ type Element interface {
 
 type Compound interface {
 	Element
-	Point(string, ...Point) Point
+	Point(string) Point
+	InnerPin(PinCode) Pin
 }

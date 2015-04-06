@@ -5,10 +5,9 @@ import (
 	"github.com/ivpusic/neo-cors"
 	"runtime"
 	"sim3/api"
-	"sim3/ncl"
+	_ "sim3/ncl/extra"
 	"sim3/ncl/std"
 	"sim3/ncl/tool"
-	"sim3/tri"
 	"sync"
 )
 
@@ -20,12 +19,8 @@ func init() {
 }
 
 func load() {
-	board := std.Board()
-	probe := std.Probe("NOT(~)")
-	not := std.Not()
-	board.Point("~").Solder(std.Probe("~").Pin(ncl.I), std.Generator(tri.TRUE, tri.NIL, tri.FALSE, tri.NIL).Pin(ncl.O), not.Pin(ncl.I))
-	board.Point("!~").Solder(not.Pin(ncl.O), probe.Pin(ncl.I))
 	t := &tool.Solder{}
+	t.UserPin("out", std.NewIn())
 	t.F("demo.nl")
 }
 
