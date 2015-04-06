@@ -7,6 +7,7 @@ import (
 	"sim3/api"
 	"sim3/ncl"
 	"sim3/ncl/std"
+	"sim3/ncl/tool"
 	"sim3/tri"
 	"sync"
 )
@@ -24,6 +25,8 @@ func load() {
 	not := std.Not()
 	board.Point("~").Solder(std.Probe("~").Pin(ncl.I), std.Generator(tri.TRUE, tri.NIL, tri.FALSE, tri.NIL).Pin(ncl.O), not.Pin(ncl.I))
 	board.Point("!~").Solder(not.Pin(ncl.O), probe.Pin(ncl.I))
+	t := &tool.Solder{}
+	t.F("demo.nl")
 }
 
 func main() {
