@@ -114,3 +114,33 @@ func Board() ncl.Compound {
 	ret.Point("0").Solder(Static.Ground.Pin(ncl.O))
 	return ret
 }
+
+type trig struct {
+	D    ncl.Out
+	S    ncl.In
+	data tri.Trit
+}
+
+func (t *trig) Pin(c ncl.PinCode) ncl.Pin {
+	switch c {
+	case ncl.D:
+		return t.D
+	case ncl.S:
+		return t.S
+	}
+	panic(0)
+}
+
+func Trigger() ncl.Element {
+	t := &trig{D: newOut(), S: newIn(), data: tri.NIL}
+	go func(t *trig) {
+		ncl.Step(t, func() {
+			ok, val := t.S.Select()
+			if ok {
+				t.data = val
+			}
+			t.D.Validate(true, t.data)
+		})
+	}(t)
+	return t
+}

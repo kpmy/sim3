@@ -18,6 +18,13 @@ type PinCode int
 const (
 	I PinCode = iota
 	O
+	D
+	S
+	A
+	B
+	T
+	N
+	F
 )
 
 type Pin interface {
