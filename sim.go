@@ -6,7 +6,6 @@ import (
 	"runtime"
 	"sim3/api"
 	_ "sim3/ncl/extra"
-	"sim3/ncl/std"
 	"sim3/ncl/tool"
 	"sync"
 )
@@ -14,13 +13,13 @@ import (
 var wg *sync.WaitGroup = &sync.WaitGroup{}
 
 func init() {
-	runtime.GOMAXPROCS(runtime.NumCPU() * 4)
+	runtime.GOMAXPROCS(1)
 	wg.Add(1)
 }
 
 func load() {
 	t := &tool.Solder{}
-	t.UserPin("out", std.NewIn())
+	t.UserPin("out", tool.Out)
 	t.F("demo.nl")
 }
 

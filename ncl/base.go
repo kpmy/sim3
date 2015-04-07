@@ -33,12 +33,12 @@ type Pin interface {
 
 type In interface {
 	Pin
-	Select() (bool, tri.Trit)
+	Select() *tri.Trit
 }
 
 type Out interface {
 	Pin
-	Validate(bool, ...tri.Trit)
+	Update(*tri.Trit)
 }
 
 type Point interface {
@@ -47,10 +47,12 @@ type Point interface {
 
 type Element interface {
 	Pin(PinCode) Pin
+	Do()
 }
 
 type Compound interface {
 	Element
 	Point(string) Point
 	InnerPin(PinCode) Pin
+	Pins(...map[PinCode]Pin) map[PinCode]Pin
 }

@@ -5,37 +5,52 @@ import (
 	"gopkg.in/yaml.v2"
 	"hash/fnv"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"sim3/ncl"
 	"sim3/ncl/std"
-	"strconv"
 	"ypk/assert"
 )
 
-type Import func() ncl.Element
+type Import func(...interface{}) ncl.Element
 
 var imps map[string]Import = make(map[string]Import)
 
-func init() {
-	imps["NOT"] = std.Not
-	imps["PROBE"] = func() ncl.Element {
-		return std.Probe(strconv.Itoa(rand.Int()))
+func Simple(f func() ncl.Element) Import {
+	return func(...interface{}) ncl.Element {
+		return f()
 	}
-	imps["SUM3"] = std.Sum3
-	imps["SUM3r"] = std.Sum3r
-	imps["DMX"] = std.Demux
-	imps["MX"] = std.Mux
-	imps["NAND"] = std.AndNot
-	imps["NOR"] = std.OrNot
-	imps["CAR3s"] = std.Car3s
-	imps["CAR3m"] = std.Car3m
-	imps["CAR3sr"] = std.Car3sr
-	imps["CMP"] = std.Cmp
-	imps["CL"] = std.CycleLeft
-	imps["CR"] = std.CycleRight
-	imps["T"] = std.Trigger
+}
+
+type PinClosure func(ncl.Element) ncl.Pin
+
+func In(e ncl.Element) ncl.Pin {
+	return std.NewIn(e)
+}
+
+func Out(e ncl.Element) ncl.Pin {
+	return std.NewOut(e)
+}
+
+func init() {
+	imps["NOT"] = Simple(std.Not)
+	imps["PROBE"] = func(opts ...interface{}) ncl.Element {
+		assert.For(len(opts) != 0, 20)
+		return std.Probe(opts[0].(string))
+	}
+	imps["SUM3"] = Simple(std.Sum3)
+	imps["SUM3r"] = Simple(std.Sum3r)
+	imps["DMX"] = Simple(std.Demux)
+	imps["MX"] = Simple(std.Mux)
+	imps["NAND"] = Simple(std.AndNot)
+	imps["NOR"] = Simple(std.OrNot)
+	imps["CAR3s"] = Simple(std.Car3s)
+	imps["CAR3m"] = Simple(std.Car3m)
+	imps["CAR3sr"] = Simple(std.Car3sr)
+	imps["CMP"] = Simple(std.Cmp)
+	imps["CL"] = Simple(std.CycleLeft)
+	imps["CR"] = Simple(std.CycleRight)
+	imps["T"] = Simple(std.Trigger)
 }
 
 func Register(name string, i Import) {
@@ -46,7 +61,7 @@ type Solder struct {
 	imp  map[string]Import
 	ent  map[string]ncl.Element
 	root ncl.Compound
-	pins map[ncl.PinCode]ncl.Pin
+	pins map[ncl.PinCode]PinClosure
 }
 
 type Pin map[string]string
@@ -96,7 +111,7 @@ func (s *Solder) handle(n *NetList) {
 	for k, v := range n.Entities {
 		assert.For(s.ent[k] == nil, 27, k, v)
 		assert.For(s.imp[v] != nil, 28, v)
-		s.ent[k] = s.imp[v]()
+		s.ent[k] = s.imp[v](k)
 		fmt.Println(k, v)
 	}
 	for k, v := range n.Netlist {
@@ -128,19 +143,24 @@ func (s *Solder) parse(data string) {
 }
 
 func (s *Solder) init() {
-	s.root = std.Board(s.pins)
+	s.root = std.Board()
+	pins := make(map[ncl.PinCode]ncl.Pin)
+	for k, v := range s.pins {
+		pins[k] = v(s.root)
+	}
+	s.root.Pins(pins)
 	s.imp = make(map[string]Import)
 	s.ent = make(map[string]ncl.Element)
 	s.parse(`import: [PROBE]`)
 	s.ent["$"] = s.root
 }
 
-func (s *Solder) UserPin(name string, p ncl.Pin) {
+func (s *Solder) UserPin(name string, p PinClosure) {
 	assert.For(name != "", 20)
 	assert.For(p != nil, 21)
 	assert.For(s.root == nil, 22)
 	if s.pins == nil {
-		s.pins = make(map[ncl.PinCode]ncl.Pin)
+		s.pins = make(map[ncl.PinCode]PinClosure)
 	}
 	s.pins[encodePin(name)] = p
 }

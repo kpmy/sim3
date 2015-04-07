@@ -30,22 +30,29 @@ func (e *mux) Pin(c ncl.PinCode) ncl.Pin {
 	panic(0)
 }
 
-func doMux(e *mux) {
-	ncl.Step(e, func() {
-		da, a := e.A.Select()
-		ok, val := false, tri.NIL
+func (e *mux) init() {
+	e.A = NewIn(e)
+	e.B = NewOut(e)
+	e.T = NewIn(e)
+	e.N = NewIn(e)
+	e.F = NewIn(e)
+}
 
-		if da {
-			if a == tri.TRUE {
-				ok, val = e.T.Select()
-			} else if a == tri.NIL {
-				ok, val = e.N.Select()
-			} else if a == tri.FALSE {
-				ok, val = e.F.Select()
-			}
+func (e *mux) Do() {
+	_a := e.A.Select()
+	var val *tri.Trit
+	if _a != nil {
+		a := *_a
+		if a == tri.TRUE {
+			val = e.T.Select()
+		} else if a == tri.NIL {
+			val = e.N.Select()
+		} else if a == tri.FALSE {
+			val = e.F.Select()
 		}
-		e.B.Validate(ok, val)
-	})
+	}
+	e.B.Update(val)
+
 }
 
 type demux struct {
@@ -72,41 +79,48 @@ func (e *demux) Pin(c ncl.PinCode) ncl.Pin {
 	panic(0)
 }
 
-func doDemux(e *demux) {
+func (e *demux) init() {
+	e.A = NewIn(e)
+	e.B = NewIn(e)
+	e.T = NewOut(e)
+	e.N = NewOut(e)
+	e.F = NewOut(e)
+}
+
+func (e *demux) Do() {
 	reset := func(e *demux) {
-		e.T.Validate(false)
-		e.N.Validate(false)
-		e.F.Validate(false)
+		e.T.Update(nil)
+		e.N.Update(nil)
+		e.F.Update(nil)
 	}
-	ncl.Step(e, func() {
-		da, a := e.A.Select()
-		if da {
-			db, b := e.B.Select()
-			if db {
-				if a == tri.TRUE {
-					e.T.Validate(db, b)
-				} else if a == tri.NIL {
-					e.N.Validate(db, b)
-				} else if a == tri.FALSE {
-					e.F.Validate(db, b)
-				}
-			} else {
-				reset(e)
+	_a := e.A.Select()
+	if _a != nil {
+		b := e.B.Select()
+		if b != nil {
+			a := *_a
+			if a == tri.TRUE {
+				e.T.Update(b)
+			} else if a == tri.NIL {
+				e.N.Update(b)
+			} else if a == tri.FALSE {
+				e.F.Update(b)
 			}
 		} else {
 			reset(e)
 		}
-	})
+	} else {
+		reset(e)
+	}
 }
 
 func Mux() ncl.Element {
-	e := &mux{A: NewIn(), B: NewOut(), T: NewIn(), N: NewIn(), F: NewIn()}
-	go doMux(e)
+	e := &mux{}
+	e.init()
 	return e
 }
 
 func Demux() ncl.Element {
-	e := &demux{A: NewIn(), B: NewIn(), T: NewOut(), N: NewOut(), F: NewOut()}
-	go doDemux(e)
+	e := &demux{}
+	e.init()
 	return e
 }

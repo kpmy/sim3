@@ -1,41 +1,33 @@
 package std
 
 import (
+	"fmt"
 	"sim3/ncl"
 	"sim3/tri"
+	"sync"
 	"ypk/assert"
 	"ypk/halt"
 )
 
 type out struct {
 	ncl.Out
-	meta chan *tri.Trit
+	val   *tri.Trit
+	owner ncl.Element
 }
 
-func (o *out) Validate(valid bool, value ...tri.Trit) {
-	if valid {
-		assert.For(len(value) == 1, 20)
-		o.meta <- &value[0]
-	} else {
-		o.meta <- nil
-	}
+func (o *out) Update(value *tri.Trit) {
+	o.val = value
 }
 
 type in struct {
 	ncl.In
-	meta chan *tri.Trit
+	val   *tri.Trit
+	meta  chan *sync.WaitGroup
+	owner ncl.Element
 }
 
-func (i *in) Select() (valid bool, value tri.Trit) {
-	var tmp *tri.Trit
-	select {
-	case tmp = <-i.meta:
-	}
-	valid = tmp != nil
-	if valid {
-		value = *tmp
-	}
-	return
+func (i *in) Select() *tri.Trit {
+	return i.val
 }
 
 type point struct {
@@ -64,13 +56,7 @@ func (p *point) sel() (value *tri.Trit) {
 		switch x := _x.(type) {
 		case *out:
 			if value == nil {
-				select {
-				case value = <-x.meta:
-				}
-			} else {
-				select {
-				case _ = <-x.meta:
-				}
+				value = x.val
 			}
 		case *in:
 		default:
@@ -85,7 +71,21 @@ func (p *point) set(value *tri.Trit) {
 		switch x := _x.(type) {
 		case *out:
 		case *in:
-			x.meta <- value
+			x.val = value
+		default:
+			halt.As(100)
+		}
+	}
+}
+
+func (p *point) run(wg *sync.WaitGroup) {
+	for _, _x := range p.pins {
+		switch x := _x.(type) {
+		case *out:
+		case *in:
+			fmt.Println("run")
+			wg.Add(1)
+			x.meta <- wg
 		default:
 			halt.As(100)
 		}
@@ -96,20 +96,30 @@ func pt(n string) (ret *point) {
 	ret = &point{pins: make([]ncl.Pin, 0), name: n}
 	go func(p *point) {
 		ncl.Step(p, func() {
+			fmt.Println("point", p.name)
+			wg := &sync.WaitGroup{}
 			p.set(p.sel())
+			p.run(wg)
+			wg.Wait()
 		})
 	}(ret)
 	return ret
 }
 
-func NewOut() (ret *out) {
-	ret = &out{}
-	ret.meta = make(chan *tri.Trit)
+func NewOut(o ncl.Element) (ret *out) {
+	ret = &out{owner: o}
 	return
 }
 
-func NewIn() (ret *in) {
-	ret = &in{}
-	ret.meta = make(chan *tri.Trit)
+func NewIn(o ncl.Element) (ret *in) {
+	assert.For(o != nil, 20)
+	ret = &in{owner: o}
+	ret.meta = make(chan *sync.WaitGroup)
+	go func(i *in) {
+		wg := <-i.meta
+		i.owner.Do()
+		wg.Done()
+		fmt.Println("done")
+	}(ret)
 	return
 }

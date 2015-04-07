@@ -25,15 +25,18 @@ func (e *any2) Pin(c ncl.PinCode) ncl.Pin {
 	panic(0)
 }
 
-func doAny2(e *any2) {
-	ncl.Step(e, func() {
-		ok, val := e.I.Select()
-		if ok {
-			e.O.Validate(true, e.fn(val))
-		} else {
-			e.O.Validate(false)
-		}
-	})
+func (e *any2) init() {
+	e.I = NewIn(e)
+	e.O = NewOut(e)
+}
+
+func (e *any2) Do() {
+	if sig := e.I.Select(); sig != nil {
+		val := e.fn(*sig)
+		e.O.Update(&val)
+	} else {
+		e.O.Update(nil)
+	}
 }
 
 func Not() ncl.Element {
@@ -41,8 +44,8 @@ func Not() ncl.Element {
 		q = tri.Not(p)
 		return
 	}
-	e := &any2{typ: "¬", I: NewIn(), O: NewOut(), fn: f}
-	go doAny2(e)
+	e := &any2{typ: "¬", fn: f}
+	e.init()
 	return e
 }
 
@@ -51,8 +54,8 @@ func Buffer() ncl.Element {
 		q = p
 		return
 	}
-	e := &any2{typ: "BUF", I: NewIn(), O: NewOut(), fn: f}
-	go doAny2(e)
+	e := &any2{typ: "BUF", fn: f}
+	e.init()
 	return e
 }
 
@@ -61,8 +64,8 @@ func CycleRight() ncl.Element {
 		q = tri.CNot(p)
 		return
 	}
-	e := &any2{typ: "→", I: NewIn(), O: NewOut(), fn: f}
-	go doAny2(e)
+	e := &any2{typ: "→", fn: f}
+	e.init()
 	return e
 }
 
@@ -71,7 +74,7 @@ func CycleLeft() ncl.Element {
 		q = tri.CNot(tri.CNot(p))
 		return
 	}
-	e := &any2{typ: "←", I: NewIn(), O: NewOut(), fn: f}
-	go doAny2(e)
+	e := &any2{typ: "←", fn: f}
+	e.init()
 	return e
 }

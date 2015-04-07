@@ -1,10 +1,8 @@
 package ncl
 
-import (
-	"time"
-)
+import "time"
 
-var slow time.Duration = time.Duration(time.Millisecond * 1)
+var slow time.Duration = time.Duration(time.Millisecond * 200)
 
 func Step(obj interface{}, step func()) {
 	do := func() {
