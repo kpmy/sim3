@@ -15,6 +15,10 @@ type out struct {
 	owner ncl.Element
 }
 
+func (o *out) String() string {
+	return fmt.Sprint(o.owner, ":", o.val, ".", "out")
+}
+
 func (o *out) Update(value *tri.Trit) {
 	o.val = value
 }
@@ -26,6 +30,10 @@ type in struct {
 	owner ncl.Element
 }
 
+func (i *in) String() string {
+	return fmt.Sprint(i.owner, ":", i.val, ".", "in")
+}
+
 func (i *in) Select() *tri.Trit {
 	return i.val
 }
@@ -33,6 +41,21 @@ func (i *in) Select() *tri.Trit {
 type point struct {
 	pins []ncl.Pin
 	name string
+}
+
+func (p *point) dump(t ...string) (ret string) {
+	ok := false
+	for i := 0; i < len(t) && !ok; i++ {
+		ok = t[i] == p.name
+	}
+	if ok {
+		ret = p.name
+		for _, x := range p.pins {
+			ret = fmt.Sprint(ret, " ", x)
+		}
+		fmt.Println(ret)
+	}
+	return
 }
 
 func (p *point) Solder(pins ...ncl.Pin) {
@@ -47,6 +70,8 @@ func (p *point) Solder(pins ...ncl.Pin) {
 	for _, pin := range pins {
 		if !exists(pin) {
 			p.pins = append(p.pins, pin)
+		} else {
+			halt.As(100, pin)
 		}
 	}
 }
@@ -78,29 +103,29 @@ func (p *point) set(value *tri.Trit) {
 	}
 }
 
-func (p *point) run(wg *sync.WaitGroup) {
+func (p *point) run() {
+	wg := &sync.WaitGroup{}
 	for _, _x := range p.pins {
 		switch x := _x.(type) {
 		case *out:
+			x.owner.Do()
 		case *in:
-			fmt.Println("run")
 			wg.Add(1)
 			x.meta <- wg
 		default:
 			halt.As(100)
 		}
 	}
+	wg.Wait()
 }
 
 func pt(n string) (ret *point) {
 	ret = &point{pins: make([]ncl.Pin, 0), name: n}
 	go func(p *point) {
 		ncl.Step(p, func() {
-			fmt.Println("point", p.name)
-			wg := &sync.WaitGroup{}
 			p.set(p.sel())
-			p.run(wg)
-			wg.Wait()
+			//p.dump("a", "b", "c", "s")
+			p.run()
 		})
 	}(ret)
 	return ret
@@ -116,10 +141,11 @@ func NewIn(o ncl.Element) (ret *in) {
 	ret = &in{owner: o}
 	ret.meta = make(chan *sync.WaitGroup)
 	go func(i *in) {
-		wg := <-i.meta
-		i.owner.Do()
-		wg.Done()
-		fmt.Println("done")
+		ncl.Step(i, func() {
+			wg := <-i.meta
+			i.owner.Do()
+			wg.Done()
+		})
 	}(ret)
 	return
 }

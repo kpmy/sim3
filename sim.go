@@ -19,8 +19,7 @@ func init() {
 
 func load() {
 	t := &tool.Solder{}
-	t.UserPin("out", tool.Out)
-	t.F("demo.nl")
+	t.F("counter.yml")
 }
 
 func main() {

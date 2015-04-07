@@ -1,6 +1,7 @@
 package std
 
 import (
+	"fmt"
 	"reflect"
 	"sim3/api"
 	"sim3/ncl"
@@ -22,6 +23,10 @@ func (t *power) Pin(c ncl.PinCode) ncl.Pin {
 
 func (t *power) Do() {
 	t.O.Update(&t.value)
+}
+
+func (p *power) String() string {
+	return fmt.Sprint(p.value)
 }
 
 type probe struct {
@@ -50,9 +55,14 @@ func (p *probe) Do() {
 	api.Log(&api.Item{Name: p.name, Type: "probe", Meta: meta, Signal: sig})
 }
 
+func (p *probe) String() string {
+	return fmt.Sprint(p.name)
+}
+
 func Source(trit tri.Trit) (ret *power) {
 	ret = &power{value: trit}
 	ret.O = NewOut(ret)
+	ret.Do()
 	return
 }
 
@@ -85,6 +95,11 @@ func Generator(s ...tri.Trit) (ret ncl.Element) {
 	assert.For(len(s) > 0, 20)
 	ret = &gen{seq: s}
 	ret.(*gen).O = NewOut(ret)
+	go func(g *gen) {
+		ncl.Step(g, func() {
+			g.Do()
+		})
+	}(ret.(*gen))
 	return
 }
 
@@ -130,6 +145,10 @@ func (b *board) Point(x string) (ret ncl.Point) {
 
 func (b *board) Do() {}
 
+func (b *board) String() string {
+	return "board"
+}
+
 func (brd *board) Pins(pins ...map[ncl.PinCode]ncl.Pin) map[ncl.PinCode]ncl.Pin {
 	if len(pins) > 0 {
 		brd.pins = make(map[ncl.PinCode]ncl.Pin)
@@ -138,13 +157,15 @@ func (brd *board) Pins(pins ...map[ncl.PinCode]ncl.Pin) map[ncl.PinCode]ncl.Pin 
 			for k, _p := range pins[0] {
 				b := Buffer().(*any2)
 				switch p := _p.(type) {
-				case ncl.In:
+				case *in:
 					b.I = p
 					brd.pins[k] = p
+					p.owner = b
 					brd._pins[k] = b.O
-				case ncl.Out:
+				case *out:
 					b.O = p
 					brd.pins[k] = p
+					p.owner = b
 					brd._pins[k] = b.I
 				default:
 					halt.As(100, reflect.TypeOf(p))
@@ -180,8 +201,22 @@ func (t *trig) Pin(c ncl.PinCode) ncl.Pin {
 	panic(0)
 }
 
+func (t *trig) Value(v ...*tri.Trit) *tri.Trit {
+	if len(v) > 0 {
+		t.data = *v[0]
+	}
+	return &t.data
+}
+
 func (t *trig) Do() {
+	val := t.S.Select()
+	if val != nil {
+		t.data = *val
+	}
 	t.D.Update(&t.data)
+}
+func (t *trig) String() string {
+	return fmt.Sprint("T", ":", t.data)
 }
 
 func Trigger() ncl.Element {

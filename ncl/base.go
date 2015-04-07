@@ -56,3 +56,7 @@ type Compound interface {
 	InnerPin(PinCode) Pin
 	Pins(...map[PinCode]Pin) map[PinCode]Pin
 }
+
+type Trigger interface {
+	Value(...*tri.Trit) *tri.Trit
+}

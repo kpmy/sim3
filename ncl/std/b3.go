@@ -1,6 +1,7 @@
 package std
 
 import (
+	"fmt"
 	"sim3/ncl"
 	"sim3/tri"
 	"ypk/halt"
@@ -37,6 +38,10 @@ func (e *any3) Do() {
 	} else {
 		e.O.Update(nil)
 	}
+}
+
+func (e *any3) String() string {
+	return fmt.Sprint(e.typ)
 }
 
 func (e *any3) init() {

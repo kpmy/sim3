@@ -1,4 +1,4 @@
-import: [SM3, SM3r]
+import: [SM3, SM3r, SM, SMr]
 entities: 
   sr: SM3r
   p0: PROBE
@@ -6,12 +6,12 @@ entities:
   s: SM3
   p2: PROBE
   p3: PROBE
+  sm: SM
+  smr: SMr
 netlist:
-  T: [sr: A]
-  N: [sr: B]
+  T: [sr: A, s: A]
+  N: [sr: B, s: B]
   spsr: [sr: Sr, p0: I]
   spcr: [sr: Cr, p1: I]
-  T: [s: A]
-  N: [s: B]
   sps: [s: S, p2: I]
   spc: [s: C, p3: I]

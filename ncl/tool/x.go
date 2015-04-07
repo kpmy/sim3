@@ -1,14 +1,15 @@
 package tool
 
 import (
-	"fmt"
 	"gopkg.in/yaml.v2"
 	"hash/fnv"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sim3/ncl"
 	"sim3/ncl/std"
+	"sim3/tri"
 	"ypk/assert"
 )
 
@@ -72,6 +73,20 @@ type NetList struct {
 	Import   []string
 	Entities map[string]string
 	Netlist  map[string]PinList
+	Init     map[string]string
+}
+
+func value(v string) tri.Trit {
+	switch v {
+	case "T":
+		return tri.TRUE
+	case "N":
+		return tri.NIL
+	case "F":
+		return tri.FALSE
+	default:
+		panic(0)
+	}
 }
 
 func encodePin(p string) ncl.PinCode {
@@ -106,16 +121,13 @@ func encodePin(p string) ncl.PinCode {
 func (s *Solder) handle(n *NetList) {
 	for _, i := range n.Import {
 		s.imp[i] = imps[i]
-		fmt.Println(i)
 	}
 	for k, v := range n.Entities {
 		assert.For(s.ent[k] == nil, 27, k, v)
 		assert.For(s.imp[v] != nil, 28, v)
 		s.ent[k] = s.imp[v](k)
-		fmt.Println(k, v)
 	}
 	for k, v := range n.Netlist {
-		fmt.Println(k)
 		p := s.root.Point(k)
 		for _, i := range v {
 			for _e, io := range i {
@@ -129,9 +141,14 @@ func (s *Solder) handle(n *NetList) {
 				}
 				assert.For(pin != nil, 30, e, io)
 				p.Solder(pin)
-				fmt.Println(_e, io)
 			}
 		}
+	}
+	for k, v := range n.Init {
+		t, ok := s.ent[k].(ncl.Trigger)
+		assert.For(ok, 20, reflect.TypeOf(s.ent[k]))
+		val := value(v)
+		t.Value(&val)
 	}
 }
 

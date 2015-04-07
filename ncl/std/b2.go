@@ -1,6 +1,7 @@
 package std
 
 import (
+	"fmt"
 	"sim3/ncl"
 	"sim3/tri"
 	"ypk/halt"
@@ -23,6 +24,10 @@ func (e *any2) Pin(c ncl.PinCode) ncl.Pin {
 		halt.As(100)
 	}
 	panic(0)
+}
+
+func (e *any2) String() string {
+	return fmt.Sprint(e.typ)
 }
 
 func (e *any2) init() {
