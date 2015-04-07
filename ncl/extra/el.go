@@ -11,7 +11,7 @@ func SM3() ncl.Element {
 	t.UserPin("B", tool.In)
 	t.UserPin("C", tool.Out)
 	t.UserPin("S", tool.Out)
-	t.F("sm3.nl")
+	t.F("sm3.yml")
 	return t.Root()
 }
 
@@ -28,7 +28,7 @@ func SM3r() ncl.Element {
 	t.UserPin("B", tool.In)
 	t.UserPin("Cr", tool.Out)
 	t.UserPin("Sr", tool.Out)
-	t.F("sm3r.nl")
+	t.F("sm3r.yml")
 	return t.Root()
 }
 
@@ -39,7 +39,7 @@ func SM() ncl.Element {
 	t.UserPin("B", tool.In)
 	t.UserPin("S", tool.Out)
 	t.UserPin("C", tool.Out)
-	t.F("sm.nl")
+	t.F("sm.yml")
 	return t.Root()
 }
 
@@ -50,6 +50,6 @@ func SMr() ncl.Element {
 	t.UserPin("B", tool.In)
 	t.UserPin("Sr", tool.Out)
 	t.UserPin("Cr", tool.Out)
-	t.F("smr.nl")
+	t.F("smr.yml")
 	return t.Root()
 }
