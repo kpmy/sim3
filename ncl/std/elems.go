@@ -3,7 +3,7 @@ package std
 import (
 	"fmt"
 	"reflect"
-	"sim3/api"
+	//	"sim3/api"
 	"sim3/ncl"
 	"sim3/tri"
 	"ypk/assert"
@@ -46,13 +46,14 @@ func Probe(n string) (ret ncl.Element) {
 }
 
 func (p *probe) Do() {
-	signal := p.I.Select()
+	/* signal := p.I.Select()
 	meta := signal != nil
 	sig := tri.FALSE
 	if meta {
 		sig = *signal
-	}
-	api.Log(&api.Item{Name: p.name, Type: "probe", Meta: meta, Signal: sig})
+	} */
+	//fmt.Println(p.name, meta, sig)
+	//	api.Log(&api.Item{Name: p.name, Type: "probe", Meta: meta, Signal: sig})
 }
 
 func (p *probe) String() string {

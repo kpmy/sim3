@@ -3,9 +3,6 @@ package tool
 import (
 	"gopkg.in/yaml.v2"
 	"hash/fnv"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"reflect"
 	"sim3/ncl"
 	"sim3/ncl/std"
@@ -14,6 +11,10 @@ import (
 )
 
 type Import func(...interface{}) ncl.Element
+
+type DataSource interface {
+	Get(name string) (data []byte, err error)
+}
 
 var imps map[string]Import = make(map[string]Import)
 
@@ -63,6 +64,7 @@ type Solder struct {
 	ent  map[string]ncl.Element
 	root ncl.Compound
 	pins map[ncl.PinCode]PinClosure
+	Data DataSource
 }
 
 type Pin map[string]string
@@ -189,16 +191,19 @@ func (s *Solder) Y(y string) {
 	s.parse(y)
 }
 
+var Src DataSource
+
 func (s *Solder) F(fn string) {
 	if s.root == nil {
 		s.init()
 	}
-	path, _ := os.Getwd()
-	input, err := os.Open(filepath.Join(path, "netlist", fn))
-	assert.For(err == nil, 40, path, fn)
-	data, _ := ioutil.ReadAll(input)
+	if s.Data == nil {
+		s.Data = Src
+	}
+	assert.For(s.Data != nil, 20)
+	data, _ := s.Data.Get(fn)
 	nl := &NetList{}
-	err = yaml.Unmarshal(data, nl)
+	err := yaml.Unmarshal(data, nl)
 	assert.For(err == nil, 41, err)
 	s.handle(nl)
 }

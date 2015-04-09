@@ -74,5 +74,6 @@ main() async{
     ..catchError((e){});
     new Future.delayed(new Duration(milliseconds: 300), get);
   };
-  get();
+  //get();
+  new Worker("go/sim3.js");
 }
