@@ -2,11 +2,7 @@ package main
 
 import (
 	"log"
-	//	"github.com/ivpusic/neo"
-	//	"github.com/ivpusic/neo-cors"
-	//"runtime"
-	//	"sim3/api"
-	"github.com/gopherjs/gopherjs/js"
+	"sim3/bus"
 	_ "sim3/ncl/extra"
 	"sim3/ncl/tool"
 	"sim3/portable"
@@ -17,8 +13,13 @@ var wg *sync.WaitGroup = &sync.WaitGroup{}
 
 func init() {
 	tool.Src = portable.DataSource
-	//runtime.GOMAXPROCS(1)
-	wg.Add(1)
+}
+
+var busChan chan *bus.Msg
+
+//этот хэндлер только пишет сообщения в канал главной горутины
+func busHandler(m *bus.Msg) {
+	busChan <- m
 }
 
 func load() {
@@ -26,19 +27,28 @@ func load() {
 	t.F("counter.yml")
 }
 
-func main() {
-	js.Global.Get("self")
-	log.Println("sim3 started")
+//этот хэндлер обрабатывает сообщения в рамках главной горутины
+func handle(m *bus.Msg) {
+	switch m.Typ {
+	case "init":
+		load()
+	}
+}
 
-	/*	nw := func() {
-			app := neo.App()
-			app.Use(cors.Init())
-			app.Get("/tri.json", api.Tri)
-			app.Start()
+func main() {
+	log.Println("sim3 started")
+	bus.Init(busHandler)
+	busChan = make(chan *bus.Msg)
+	wg.Add(1)
+	go func(wg *sync.WaitGroup, c chan *bus.Msg) {
+		bus.Process(&bus.Msg{Typ: "init"})
+		for {
+			select {
+			case m := <-c:
+				handle(m)
+			}
 		}
-		go nw()
-	*/
-	load()
+	}(wg, busChan)
 	wg.Wait()
 	log.Println("sim3 closed")
 }
