@@ -3,7 +3,7 @@
 
 // TODO: Put public facing types in this file.
 
-library si3m.base;
+library sim3.base;
 
 /// Checks if you are awesome. Spoiler: you are.
 class Awesome {

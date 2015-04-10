@@ -1,9 +1,9 @@
 // Copyright (c) 2015, <your name>. All rights reserved. Use of this source code
 // is governed by a BSD-style license that can be found in the LICENSE file.
 
-library si3m.example;
+library sim3.example;
 
-import 'package:si3m/si3m.dart';
+import 'package:sim3/sim3.dart';
 
 main() {
   var awesome = new Awesome();
