@@ -53,6 +53,7 @@ func init() {
 	imps["CL"] = Simple(std.CycleLeft)
 	imps["CR"] = Simple(std.CycleRight)
 	imps["T"] = Simple(std.Trigger)
+	imps["SW"] = Simple(std.Sw)
 }
 
 func Register(name string, i Import) {

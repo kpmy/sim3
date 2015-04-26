@@ -6,6 +6,51 @@ import (
 	"ypk/halt"
 )
 
+type sw struct {
+	I ncl.In
+	O ncl.Out
+	A ncl.In
+}
+
+func (e *sw) Pin(c ncl.PinCode) ncl.Pin {
+	switch c {
+	case ncl.A:
+		return e.A
+	case ncl.I:
+		return e.I
+	case ncl.O:
+		return e.O
+	default:
+		halt.As(100)
+	}
+	panic(0)
+}
+
+func (e *sw) init() {
+	e.A = NewIn(e)
+	e.I = NewIn(e)
+	e.O = NewOut(e)
+}
+
+func (e *sw) Do() {
+	_a := e.A.Select()
+	var val *tri.Trit
+	if _a != nil {
+		a := *_a
+		if a == tri.TRUE {
+			val = e.I.Select()
+		}
+	}
+	e.O.Update(val)
+
+}
+
+func Sw() ncl.Element {
+	e := &sw{}
+	e.init()
+	return e
+}
+
 type mux struct {
 	T, N, F ncl.In
 	A       ncl.In
