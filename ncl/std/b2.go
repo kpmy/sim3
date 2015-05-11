@@ -2,9 +2,9 @@ package std
 
 import (
 	"fmt"
+	"github.com/kpmy/ypk/halt"
 	"sim3/ncl"
 	"sim3/tri"
-	"ypk/halt"
 )
 
 type any2 struct {

@@ -2,11 +2,11 @@ package std
 
 import (
 	"fmt"
+	"github.com/kpmy/ypk/assert"
+	"github.com/kpmy/ypk/halt"
 	"sim3/ncl"
 	"sim3/tri"
 	"sync"
-	"ypk/assert"
-	"ypk/halt"
 )
 
 type out struct {

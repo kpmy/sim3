@@ -1,9 +1,9 @@
 package std
 
 import (
+	"github.com/kpmy/ypk/halt"
 	"sim3/ncl"
 	"sim3/tri"
-	"ypk/halt"
 )
 
 type sw struct {

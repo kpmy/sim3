@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"reflect"
 	//	"sim3/api"
+	"github.com/kpmy/ypk/assert"
+	"github.com/kpmy/ypk/halt"
 	"sim3/ncl"
 	"sim3/tri"
-	"ypk/assert"
-	"ypk/halt"
 )
 
 type power struct {

@@ -1,11 +1,11 @@
 package portable
 
 import (
+	"github.com/kpmy/ypk/assert"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
-	"ypk/assert"
 )
 
 type Data interface {

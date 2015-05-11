@@ -2,8 +2,8 @@ package bus
 
 import (
 	"github.com/gopherjs/gopherjs/js"
+	"github.com/kpmy/ypk/assert"
 	"github.com/mitchellh/mapstructure"
-	"ypk/assert"
 )
 
 type Msg struct {
