@@ -1,13 +1,13 @@
 package tool
 
 import (
+	"github.com/kpmy/trigo"
 	"github.com/kpmy/ypk/assert"
 	"gopkg.in/yaml.v2"
 	"hash/fnv"
 	"reflect"
 	"sim3/ncl"
 	"sim3/ncl/std"
-	"sim3/tri"
 )
 
 type Import func(...interface{}) ncl.Element
